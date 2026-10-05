@@ -1,25 +1,37 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Register = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!username.trim() || !password.trim()) {
+      toast.error('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
+      return;
+    }
+
+    setLoading(true);
     try {
       await axios.post('http://localhost:5000/api/auth/register', {
-        username,
+        username: username.trim(),
+        email: email.trim(),
         password,
-        name,
+        name: name.trim() || username.trim(),
       });
-      alert('Registration successful!');
+      toast.success('Đăng ký thành công! Hãy đăng nhập để tiếp tục.');
       navigate('/login');
     } catch (err) {
-      alert(err.response?.data?.error || 'Registration failed.');
+      toast.error(err.response?.data?.error || 'Đăng ký thất bại. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -30,7 +42,7 @@ const Register = () => {
           alt="Logo"
           className="mb-6"
           height="48"
-          src="src/assets/Logo.png"
+          src="/src/assets/Logo.png"
           width="48"
         />
 
@@ -42,29 +54,40 @@ const Register = () => {
           <input
             type="text"
             placeholder="Username"
-            className="w-full mb-2 px-4 py-2 border rounded"
+            className="w-full mb-2 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email address"
+            className="w-full mb-2 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <input
             type="text"
             placeholder="Display Name"
-            className="w-full mb-2 px-4 py-2 border rounded"
+            className="w-full mb-2 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
             type="password"
             placeholder="Password"
-            className="w-full mb-4 px-4 py-2 border rounded"
+            className="w-full mb-4 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
           <button
             type="submit"
-            className="w-full bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700 transition"
+            disabled={loading}
+            className="w-full bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700 transition disabled:opacity-50"
           >
-            Register
+            {loading ? 'Registering...' : 'Register'}
           </button>
         </form>
 
@@ -81,3 +104,4 @@ const Register = () => {
 };
 
 export default Register;
+
